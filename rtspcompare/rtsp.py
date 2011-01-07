@@ -8,7 +8,7 @@ class EthernetRTP(dpkt.ethernet.Ethernet):
     author ykk
     date January 2011
     """
-    def __init__(self, pkt):
+    def __init__(self, pkt, ts):
         """Initialize
         """
         ##Ethernet packet up to UDP
@@ -20,7 +20,11 @@ class EthernetRTP(dpkt.ethernet.Ethernet):
                     dpkt.rtp.RTP(self["data"]["data"]["data"]))
         except AttributeError:
             raise KeyError
+        ##RTP type expanded
         self.type = self.__get_rtp_type()
+        ##Timestamp
+        self.ts = ts
+        
     def get_rtp(self):
         """Get RTP part of packet
         """
@@ -41,26 +45,36 @@ class EthernetRTP(dpkt.ethernet.Ethernet):
         result["ptype"] = bytes[1] & int('01111111',2)
         return result
 
+    def __eq__(self, other):
+        """Compare packet
+        """
+        return (self.data == other.data)
+
 class RTPStream:
     """RTP stream
 
     author ykk
     date January 2011
     """
-    def __init__(self, filename):
+    def __init__(self, filename, removedup=False):
         """Initialize
         """
         ##List of packets
         self.packets = []
-        self.load_file(filename)
+        self.load_file(filename, removedup)
         
-    def load_file(self, filename):
+    def load_file(self, filename, removedup=False):
         """Load PCAP file
         """
         pc = pcap.pcap(filename)
         pc.setfilter('udp')
         for ts, pkt in pc:
-            self.packets.append(EthernetRTP(pkt))
+            if (removedup):
+                rtppkt = EthernetRTP(pkt,ts)
+                if (rtppkt not in self.packets):
+                    self.packets.append(rtppkt)
+            else:
+                self.packets.append(EthernetRTP(pkt,ts))
             
     def ssrc_count(self):
         """Count occurence of each ssrc
@@ -126,6 +140,23 @@ class RTPStream:
             if pkt.type["padded"]:
                 c += 1
         return c
+
+    def capture_ts_list(self):
+        """Return list of timestamp of capture
+        """
+        tsl = []
+        for pkt in self.packets:
+            tsl.append(pkt.ts)
+        return tsl
+
+    def interarrival_ts_list(self):
+        """List of interarrival time
+        """
+        itsl = []
+        tsl = self.capture_ts_list()
+        for i in range(0, len(tsl)-1):
+            itsl.append(tsl[i+1]-tsl[i])
+        return itsl
 
     def seq_list(self):
         """Return list of sequence number
