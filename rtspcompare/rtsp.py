@@ -24,7 +24,12 @@ class EthernetRTP(dpkt.ethernet.Ethernet):
         self.type = self.__get_rtp_type()
         ##Timestamp
         self.ts = ts
-        
+
+    def pkt_size(self):
+        """Get packet size
+        """
+        return len(self.data)
+
     def get_rtp(self):
         """Get RTP part of packet
         """
@@ -157,6 +162,14 @@ class RTPStream:
         for i in range(0, len(tsl)-1):
             itsl.append(tsl[i+1]-tsl[i])
         return itsl
+
+    def pkt_size_list(self):
+        """Return list of packet size
+        """
+        psl = []
+        for pkt in self.packets:
+            psl.append(pkt.pkt_size())
+        return psl
 
     def seq_list(self):
         """Return list of sequence number

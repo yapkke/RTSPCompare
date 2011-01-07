@@ -51,6 +51,9 @@ print "No. of marked packets:\t\t"+str(rs.marked_count())+\
 print "No. of frames:\t\t\t"+str(rs.frame_no())
 seql = rs.seq_list()
 print "Sequence numbers:\t\t"+str(min(seql))+" -- "+str(max(seql))
+psl = rs.pkt_size_list()
+print "Packet size:\t\t\t"+str(numpy.mean(psl))+"\t"\
+      "("+str(min(psl))+" -- "+str(max(psl))+")"
 print "Number Loss:\t\t\t"+str((max(seql)-min(seql)+1)-len(rs))+\
       " ("+str(float((max(seql)-min(seql)+1)-len(rs))/len(rs))+")"
 itsl = rs.interarrival_ts_list()
