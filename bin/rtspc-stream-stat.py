@@ -11,26 +11,30 @@ def usage():
     print "Usage "+sys.argv[0]+" <pcap dump of stream>\n"+\
           "\n"+\
           "Options:\n"+\
+          "-s/--ssrc\n\tSpecify synchronized source\n"+\
           "-r/--remove-dup\n\tRemove duplicate packets in trace\n"+\
           "-h/--help\n\tPrint this usage guide\n"+\
           ""
 
 #Parse options and arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hr",
-                               ["help","remove-dup"])
+    opts, args = getopt.getopt(sys.argv[1:], "hrs:",
+                               ["help","remove-dup","ssrc="])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
 #Get options
 removedup = False
+ssrc = None
 for opt,arg in opts:
     if (opt in ("-h","--help")):
         usage()
         sys.exit(0)
     elif (opt in ("-r","--remove-dup")):
         removedup = True
+    elif (opt in ("-s","--ssrc")):
+        ssrc = int(arg)
     else:
         print "Unknown option :"+str(opt)
         sys.exit(2)
@@ -42,7 +46,7 @@ if not (len(args) == 1):
 
 #Get stream and print statistics
 rs = rtsp.RTPStream(args[0], removedup)
-rs.clean()
+rs.clean(ssrc)
 print "Synchronization source:\t"+str(rs.find_main_ssrc())
 print "No. of packets:\t\t\t"+str(len(rs))
 print "No. of padded packets:\t\t"+str(rs.padded_count())

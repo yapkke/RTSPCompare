@@ -109,11 +109,13 @@ class RTPStream:
         else:
             return count
 
-    def clean(self):
+    def clean(self, ssrc=None):
         """Clean up non-stream packets and
         reserved payload type 72 or 73
         """
-        mssrc = self.find_main_ssrc()
+        mssrc = ssrc
+        if (ssrc==None):
+            mssrc = self.find_main_ssrc()
         if not isinstance(mssrc,dict):
             for pkt in self.packets[:]:
                 if ((pkt.get_rtp()["ssrc"] != mssrc) or
@@ -121,7 +123,7 @@ class RTPStream:
                     (pkt.type["ptype"] == 73)):
                     self.packets.remove(pkt)
         else:
-            raise RuntimeError("File contains multiple stream\n"+str(mmsrc))
+            raise RuntimeError("File contains multiple stream\n"+str(mssrc))
         
     def __len__(self):
         """Length of stream

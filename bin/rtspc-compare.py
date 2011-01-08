@@ -11,26 +11,30 @@ def usage():
     print "Usage "+sys.argv[0]+" <pcap dump of sent stream> <pcap dump of received stream>\n"+\
           "\n"+\
           "Options:\n"+\
+          "-s/--ssrc\n\tSpecify synchronized source\n"+\
           "-r/--remove-dup\n\tRemove duplicate packets in trace\n"+\
           "-h/--help\n\tPrint this usage guide\n"+\
           ""
 
 #Parse options and arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hr",
-                               ["help","remove-dup"])
+    opts, args = getopt.getopt(sys.argv[1:], "hrs:",
+                               ["help","remove-dup","ssrc="])
 except getopt.GetoptError:
     usage()
     sys.exit(2)
 
 #Get options
 removedup = False
+ssrc=None
 for opt,arg in opts:
     if (opt in ("-h","--help")):
         usage()
         sys.exit(0)
     elif (opt in ("-r","--remove-dup")):
         removedup = True
+    elif (opt in ("-s","--ssrc")):
+        ssrc = int(arg)
     else:
         print "Unknown option :"+str(opt)
         sys.exit(2)
@@ -43,8 +47,8 @@ if not (len(args) == 2):
 #Get stream and print statistics
 rs1 = rtsp.RTPStream(args[0], removedup)
 rs2 = rtsp.RTPStream(args[1], removedup)
-rs1.clean()
-rs2.clean()
+rs1.clean(ssrc)
+rs2.clean(ssrc)
 
 if (rs1.find_main_ssrc() != rs2.find_main_ssrc()):
     raise RuntimeError("Dumps are not from the same synchronized source")
