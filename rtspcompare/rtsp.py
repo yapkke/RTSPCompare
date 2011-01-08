@@ -73,13 +73,15 @@ class RTPStream:
         """
         pc = pcap.pcap(filename)
         pc.setfilter('udp')
+        seqn = []
         for ts, pkt in pc:
+            rtppkt = EthernetRTP(pkt,ts)
             if (removedup):
-                rtppkt = EthernetRTP(pkt,ts)
-                if (rtppkt not in self.packets):
+                if (rtppkt.get_rtp()["seq"] not in seqn):
                     self.packets.append(rtppkt)
             else:
-                self.packets.append(EthernetRTP(pkt,ts))
+                self.packets.append(rtppkt)
+            seqn.append(rtppkt.get_rtp()["seq"])
             
     def ssrc_count(self):
         """Count occurence of each ssrc
