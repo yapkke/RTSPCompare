@@ -22,6 +22,13 @@ struct yuvpsnr
   yuvpsnr(double y_, double u_, double v_):
     y(y_), u(u_), v(v_)
   {}
+
+  /** \brief Average PSNR
+   */
+  double average()
+  {
+    return (4.0*y+u+v)/6.0;
+  }
 };
 
 /** \brief YUV frame
@@ -104,9 +111,27 @@ public:
 
   /** \brief PSNR of stream with reference
    * @param reference reference stream
+   * @param offset offset to apply to reference stream
    * @return list YUV PSNR
    */
-  std::list<yuvpsnr> psnr(yuvstream* reference);
+  std::list<yuvpsnr> psnr(yuvstream* reference, int offset=0);
+
+  /** \brief Average PSNR
+   * given by (4*Y-PSNR + U-PSNR + V-PSNR)/6
+   * @param reference stream
+   * @return average PSNR 
+   */
+  double avPSNR(yuvstream* reference)
+  {
+    return avPSNR(psnr(reference));
+  }
+
+  /** \brief Average PSNR
+   * given by (4*Y-PSNR + U-PSNR + V-PSNR)/6
+   * @param psnrlist list of YUV PSNR
+   * @return average PSNR 
+   */
+  static double avPSNR(std::list<yuvpsnr> psnrlist); 
 
   /** \brief Extend stream by one to maximize average PSNR
    * Find the PSNR values of stream,
@@ -117,4 +142,18 @@ public:
   void maximal_extend(yuvstream* reference);
 
 private:
+  /** \brief Average PSNR for duplicate frame k
+   * @param offset0 PSNR values without offset
+   * @param offset1 PSNR values with offset 1
+   * @param k frame number of duplicate
+   * @return resulting average PSNR
+   */
+  double avpsnr_dup_k(std::list<yuvpsnr> offset0,
+		      std::list<yuvpsnr> offset1,
+		      int k);
+
+  /** \brief Duplicate Frame
+   * @param index frame index to duplicate
+   */
+  void dup_frame(int index);
 };
