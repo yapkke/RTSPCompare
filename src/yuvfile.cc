@@ -65,6 +65,21 @@ yuvstream::yuvstream(char* filename, int width, int height)
   fclose(f);
 }
 
+void yuvstream::write_to_file(char* filename)
+{
+  FILE* f = fopen(filename, "w");
+  std::list<yuvframe*>::iterator i = frames.begin();
+  int pixel = (*i)->width*(*i)->height;
+
+  for(; i != frames.end(); i++)
+  {
+    fwrite((*i)->y, 1, pixel, f);
+    fwrite((*i)->u, 1, pixel/4, f);
+    fwrite((*i)->v, 1, pixel/4, f);
+  }
+
+  fclose(f);
+}
 
 std::list<yuvpsnr> yuvstream::psnr(yuvstream* reference, int offset)
 {
@@ -92,7 +107,7 @@ double yuvstream::avPSNR(std::list<yuvpsnr> psnrlist)
   return avpsnr/((double) psnrlist.size());
 }
 
-void yuvstream::maximal_extend(yuvstream* reference)
+int yuvstream::maximal_extend(yuvstream* reference)
 {
   std::list<yuvpsnr> offset0 = psnr(reference);
   std::list<yuvpsnr> offset1 = psnr(reference, 1);
@@ -111,6 +126,7 @@ void yuvstream::maximal_extend(yuvstream* reference)
   }
 
   dup_frame(bestFrame);
+  return bestFrame;
 }
 
 void yuvstream::dup_frame(int index)

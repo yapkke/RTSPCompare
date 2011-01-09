@@ -52,6 +52,7 @@ int main (int argc, char **argv)
   printf ("Width = %d, Height = %d\n", width, height);
   printf ("Reference : %s\n", reffile);
   printf ("YUV File : %s\n", filename);
+  printf ("Output File : %s\n", outputfile);
   
   yuvstream ref(reffile, width, height);
   yuvstream stream(filename, width, height);
@@ -63,14 +64,16 @@ int main (int argc, char **argv)
   printf("Extending stream\n");
   while (ref.frames.size() > stream.frames.size())
   {
-    stream.maximal_extend(&ref);
-    printf("\tStream now has %d frames with PSNR %2.2f\n", 
-	   stream.frames.size(), stream.avPSNR(&ref));
+    printf("\tStream extended by duplicating frame %d with PSNR %2.2f\n", 
+	   stream.maximal_extend(&ref),
+	   stream.avPSNR(&ref));
   }
 
   printf("Final\n\tSize : %d\n\tAverage PSNR : %2.2f\n",
 	 stream.frames.size(),
 	 stream.avPSNR(&ref));
+
+  stream.write_to_file(outputfile);
   
   return 0;
 }

@@ -101,13 +101,18 @@ public:
    * @param height height of frame
    */
   yuvstream(char* filename, int width, int height);
-  
+
   /** \brief Destructor
    */
   ~yuvstream()
   {
     frames.clear();
   }
+
+  /** \brief Write stream to file
+   * @param filename filename to write to
+   */
+  void write_to_file(char* filename);
 
   /** \brief PSNR of stream with reference
    * @param reference reference stream
@@ -138,8 +143,9 @@ public:
    * and the PSNR values by displacing it by one.
    * Each possibility is a sum of the two.
    * @param reference reference stream
+   * @return frame duplicated
    */
-  void maximal_extend(yuvstream* reference);
+  int maximal_extend(yuvstream* reference);
 
 private:
   /** \brief Average PSNR for duplicate frame k
