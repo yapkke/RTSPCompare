@@ -4,6 +4,16 @@
 #include <cstring>
 #include <cmath>
 
+bool operator> (streampsnr &s1, streampsnr &s2)
+{
+  if (s1.identical > s2.identical)
+    return true;
+  else if (s1.identical == s2.identical)
+    return (s1.average > s2.average);
+  else
+    return false;
+}
+
 yuvframe::yuvframe(int width_, int height_, 
 		   unsigned char* buffer)
 {
@@ -97,14 +107,22 @@ std::list<yuvpsnr> yuvstream::psnr(yuvstream* reference, int offset)
   return psnrlist;
 }
 
-double yuvstream::avPSNR(std::list<yuvpsnr> psnrlist)
+streampsnr yuvstream::avPSNR(std::list<yuvpsnr> psnrlist)
 {
+  size_t identical = 0;
   double avpsnr = 0.0;
   for (std::list<yuvpsnr>::iterator i = psnrlist.begin(); 
        i != psnrlist.end(); i++)
-    avpsnr += i->average();
+  {
+    double framepsnr = i->average();
+    if (isinf(framepsnr))
+      identical++;
+    else
+      avpsnr += framepsnr;
+  }
 
-  return avpsnr/((double) psnrlist.size());
+  return streampsnr(identical,
+		    avpsnr/((double) (psnrlist.size()-identical)));
 }
 
 int yuvstream::maximal_extend(yuvstream* reference)
@@ -113,11 +131,11 @@ int yuvstream::maximal_extend(yuvstream* reference)
   std::list<yuvpsnr> offset1 = psnr(reference, 1);
 
   int bestFrame = 0;
-  double bestPSNR = avpsnr_dup_k(offset0, offset1, 0);
+  streampsnr bestPSNR = avpsnr_dup_k(offset0, offset1, 0);
   
   for (size_t i = 1; i < offset0.size(); i++)
   {
-    double framePSNR = avpsnr_dup_k(offset0, offset1, i);
+    streampsnr framePSNR = avpsnr_dup_k(offset0, offset1, i);
     if (framePSNR > bestPSNR)
     {
       bestPSNR = framePSNR;
@@ -142,24 +160,41 @@ void yuvstream::dup_frame(int index)
   frames.insert(j, *j);
 }
 
-double yuvstream::avpsnr_dup_k(std::list<yuvpsnr> offset0,
-			       std::list<yuvpsnr> offset1,
-			       int k)
+streampsnr yuvstream::avpsnr_dup_k(std::list<yuvpsnr> offset0,
+				   std::list<yuvpsnr> offset1,
+				   int k)
 {
   std::list<yuvpsnr>::iterator i = offset0.begin();
   std::list<yuvpsnr>::iterator j = offset1.begin();
+  size_t identical = 0;
   double avPSNR = 0.0;
-
+  double framepsnr = 0;
+  
   for (int index = 0; i != offset0.end(); i++)
   {
+    framepsnr = i->average();
     if (index <= k)
-      avPSNR += i->average();
+    {
+      if (isinf(framepsnr))
+	identical++;
+      else
+	avPSNR += framepsnr;
+    }
+
+    framepsnr = j->average();
     if (index >= k)
-      avPSNR += j->average();
+    {
+      if (isinf(framepsnr))
+	identical++;
+      else
+	avPSNR += framepsnr;
+    }
 
     index++;
     j++;
   }
 
-  return avPSNR/((double) (offset0.size()+1));
+  return streampsnr(identical,
+		    avPSNR/((double) (offset0.size()+1-identical)));
+  
 }

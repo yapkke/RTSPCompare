@@ -1,5 +1,27 @@
 #include <list>
 
+/** \brief YUV Stream PSNR
+ */
+struct streampsnr
+{
+  /** \brief Number of identical frames
+   */
+  size_t identical;
+  /** \brief Average PSNR of non-identical frames
+   */
+  double average;
+
+  /** \brief Constructor
+   * @param identical_ number of identical frames
+   * @param average_ average PSNR
+   */
+  streampsnr(size_t identical_, double average_):
+    identical(identical_), average(average_)
+  {}
+};
+
+bool operator> (streampsnr &s1, streampsnr &s2);
+
 /** \brief YUV PSNR
  */
 struct yuvpsnr
@@ -126,7 +148,7 @@ public:
    * @param reference stream
    * @return average PSNR 
    */
-  double avPSNR(yuvstream* reference)
+  streampsnr avPSNR(yuvstream* reference)
   {
     return avPSNR(psnr(reference));
   }
@@ -136,7 +158,7 @@ public:
    * @param psnrlist list of YUV PSNR
    * @return average PSNR 
    */
-  static double avPSNR(std::list<yuvpsnr> psnrlist); 
+  static streampsnr avPSNR(std::list<yuvpsnr> psnrlist); 
 
   /** \brief Extend stream by one to maximize average PSNR
    * Find the PSNR values of stream,
@@ -154,7 +176,7 @@ private:
    * @param k frame number of duplicate
    * @return resulting average PSNR
    */
-  double avpsnr_dup_k(std::list<yuvpsnr> offset0,
+  streampsnr avpsnr_dup_k(std::list<yuvpsnr> offset0,
 		      std::list<yuvpsnr> offset1,
 		      int k);
 
