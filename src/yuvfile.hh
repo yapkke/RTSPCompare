@@ -1,27 +1,5 @@
 #include <list>
 
-/** \brief YUV Stream PSNR
- */
-struct streampsnr
-{
-  /** \brief Number of identical frames
-   */
-  size_t identical;
-  /** \brief Average PSNR of non-identical frames
-   */
-  double average;
-
-  /** \brief Constructor
-   * @param identical_ number of identical frames
-   * @param average_ average PSNR
-   */
-  streampsnr(size_t identical_, double average_):
-    identical(identical_), average(average_)
-  {}
-};
-
-bool operator> (streampsnr &s1, streampsnr &s2);
-
 /** \brief YUV PSNR
  */
 struct yuvpsnr
@@ -41,9 +19,21 @@ struct yuvpsnr
    * @param u_ U-PSNR
    * @param v_ V-PSNR
    */
-  yuvpsnr(double y_, double u_, double v_):
+  yuvpsnr(double y_=0.0, double u_=0.0, double v_=0.0):
     y(y_), u(u_), v(v_)
   {}
+
+  /** \brief Constructor
+   * @param psnr_ PSNR
+   */
+  yuvpsnr(const yuvpsnr& psnr_):
+    y(psnr_.y), u(psnr_.u), v(psnr_.v)
+  {}
+
+  /** \brief Add YUV PSNR
+   * @param add YUV PSNR to add
+   */
+  void add(yuvpsnr* add);
 
   /** \brief Average PSNR
    */
@@ -52,6 +42,29 @@ struct yuvpsnr
     return (4.0*y+u+v)/6.0;
   }
 };
+
+
+/** \brief YUV Stream PSNR
+ */
+struct streampsnr
+{
+  /** \brief Number of identical frames
+   */
+  size_t identical;
+  /** \brief PSNR of non-identical frames
+   */
+  yuvpsnr psnr;
+
+  /** \brief Constructor
+   * @param identical_ number of identical frames
+   * @param psnr_ PSNR
+   */
+  streampsnr(size_t identical_, yuvpsnr psnr_):
+    identical(identical_), psnr(psnr_)
+  {}
+};
+
+bool operator> (streampsnr &s1, streampsnr &s2);
 
 /** \brief YUV frame
  *
@@ -144,7 +157,12 @@ public:
   std::list<yuvpsnr> psnr(yuvstream* reference, int offset=0);
 
   /** \brief Average PSNR
-   * given by (4*Y-PSNR + U-PSNR + V-PSNR)/6
+   * @param psnrlist list of YUV PSNR
+   * @return average PSNR 
+   */
+  static streampsnr avPSNR(std::list<yuvpsnr> psnrlist); 
+
+  /** \brief Average PSNR
    * @param reference stream
    * @return average PSNR 
    */
@@ -152,13 +170,6 @@ public:
   {
     return avPSNR(psnr(reference));
   }
-
-  /** \brief Average PSNR
-   * given by (4*Y-PSNR + U-PSNR + V-PSNR)/6
-   * @param psnrlist list of YUV PSNR
-   * @return average PSNR 
-   */
-  static streampsnr avPSNR(std::list<yuvpsnr> psnrlist); 
 
   /** \brief Extend stream by one to maximize average PSNR
    * Find the PSNR values of stream,

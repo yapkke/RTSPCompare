@@ -9,9 +9,16 @@ bool operator> (streampsnr &s1, streampsnr &s2)
   if (s1.identical > s2.identical)
     return true;
   else if (s1.identical == s2.identical)
-    return (s1.average > s2.average);
+    return (s1.psnr.average() > s2.psnr.average());
   else
     return false;
+}
+
+void yuvpsnr::add(yuvpsnr* add)
+{
+  y += add->y;
+  u += add->u;
+  v += add->v;
 }
 
 yuvframe::yuvframe(int width_, int height_, 
@@ -110,19 +117,21 @@ std::list<yuvpsnr> yuvstream::psnr(yuvstream* reference, int offset)
 streampsnr yuvstream::avPSNR(std::list<yuvpsnr> psnrlist)
 {
   size_t identical = 0;
-  double avpsnr = 0.0;
+  yuvpsnr avpsnr(0.0, 0.0, 0.0);
   for (std::list<yuvpsnr>::iterator i = psnrlist.begin(); 
        i != psnrlist.end(); i++)
   {
-    double framepsnr = i->average();
-    if (isinf(framepsnr))
+    if (isinf(i->y))
       identical++;
     else
-      avpsnr += framepsnr;
+      avpsnr.add(&(*i));
   }
 
-  return streampsnr(identical,
-		    avpsnr/((double) (psnrlist.size()-identical)));
+  double size = ((double) (psnrlist.size()-identical));
+  avpsnr.y /= size;
+  avpsnr.u /= size;
+  avpsnr.v /= size;
+  return streampsnr(identical,avpsnr);
 }
 
 int yuvstream::maximal_extend(yuvstream* reference)

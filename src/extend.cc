@@ -58,23 +58,28 @@ int main (int argc, char **argv)
   yuvstream stream(filename, width, height);
 
   streampsnr ps = stream.avPSNR(&ref);
-  printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\tAverage PSNR : %2.2f\n",
-	 stream.frames.size(),ps.identical, ps.average);
+  printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\t"
+	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n",
+	 stream.frames.size(),ps.identical, ps.psnr.average(),
+	 ps.psnr.y, ps.psnr.u, ps.psnr.v);
   
   printf("Extending stream\n");
   while (ref.frames.size() > stream.frames.size())
   {
     ps = stream.avPSNR(&ref);
-    printf("\tStream with %d identical frames & PSNR %2.2f"
+    printf("\tStream with %d identical frames & PSNR %2.2f (%2.2f,%2.2f,%2.2f)"
 	   " extended to %d by duplicating frame %d\n",
-	   ps.identical, ps.average,
+	   ps.identical, ps.psnr.average(),
+	   ps.psnr.y, ps.psnr.u, ps.psnr.v,
 	   stream.frames.size(),
 	   stream.maximal_extend(&ref));
   }
 
   ps = stream.avPSNR(&ref);
-  printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\tAverage PSNR : %2.2f\n",
-	 stream.frames.size(),ps.identical, ps.average);
+  printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\t"
+	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n",
+	 stream.frames.size(),ps.identical, ps.psnr.average(),
+	 ps.psnr.y, ps.psnr.u, ps.psnr.v);
 
   stream.write_to_file(outputfile);
   

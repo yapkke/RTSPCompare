@@ -62,8 +62,10 @@ int main (int argc, char **argv)
     findex++;
   }
   streampsnr sp = yuvstream::avPSNR(psnr);
-  printf("Number of Identical Frames : %d\nAverage PSNR : %2.2f\n", 
-	 sp.identical, sp.average);
+  printf("Number of Identical Frames : %d\n"
+	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n", 
+	 sp.identical, sp.psnr.average(),
+	 sp.psnr.y, sp.psnr.u, sp.psnr.v);
 
   return 0;
 }
