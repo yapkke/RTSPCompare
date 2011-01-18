@@ -174,7 +174,7 @@ public:
   /** \brief PSNR of stream with reference
    * @param reference reference stream
    * @param offset offset to apply to reference stream
-   * @return list YUV PSNR
+   * @return list YUV PSNR (length is min of reference or stream length)
    */
   std::list<yuvpsnr> psnr(yuvstream* reference, int offset=0);
 
@@ -202,6 +202,15 @@ public:
    */
   int maximal_extend(yuvstream* reference);
 
+  /** \brief Trim stream by one to maximize average PSNR
+   * Find the PSNR values of stream,
+   * and the PSNR values by displacing it by one.
+   * Each possibility is a sum of the two.
+   * @param reference reference stream
+   * @return frame removed
+   */
+  int maximal_trim(yuvstream* reference);
+
 private:
   /** \brief Average PSNR for duplicate frame k
    * @param offset0 PSNR values without offset
@@ -210,11 +219,26 @@ private:
    * @return resulting average PSNR
    */
   streampsnr avpsnr_dup_k(std::list<yuvpsnr> offset0,
-		      std::list<yuvpsnr> offset1,
-		      int k);
+			  std::list<yuvpsnr> offset1,
+			  int k);
+
+  /** \brief Average PSNR after removing frame k
+   * @param offset0 PSNR values without offset
+   * @param offset_1 PSNR values with offset -1
+   * @param k frame number of remove
+   * @return resulting average PSNR
+   */
+  streampsnr avpsnr_rm_k(std::list<yuvpsnr> offset0,
+			 std::list<yuvpsnr> offset_1,
+			 int k);
 
   /** \brief Duplicate Frame
    * @param index frame index to duplicate
    */
   void dup_frame(int index);
+
+  /** \brief Remove Frame
+   * @param index frame index to remove
+   */
+  void rm_frame(int index);
 };

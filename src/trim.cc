@@ -57,40 +57,24 @@ int main (int argc, char **argv)
   yuvstream ref(reffile, width, height);
   yuvstream stream(filename, width, height);
 
-  streampsnr ps = ref.avPSNR(&stream);
+  streampsnr ps = stream.avPSNR(&ref);
   printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\t"
 	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n",
-	 ref.frames.size(),ps.identical, ps.psnr.average(),
+	 stream.frames.size(),ps.identical, ps.psnr.average(),
 	 ps.psnr.y, ps.psnr.u, ps.psnr.v);
   
-  printf("Extending reference stream\n");
+  printf("Trim stream\n");
   while (ref.frames.size() < stream.frames.size())
   {
-    ps = ref.avPSNR(&stream);
+    ps = stream.avPSNR(&ref);
     printf("\tStream with %d identical frames & PSNR %2.2f (%2.2f,%2.2f,%2.2f)"
-	   " extended to %d by duplicating frame %d\n",
+	   " trimmed to %d by removing frame %d\n",
 	   ps.identical, ps.psnr.average(),
 	   ps.psnr.y, ps.psnr.u, ps.psnr.v,
 	   stream.frames.size(),
-	   ref.maximal_extend(&stream));
+	   stream.maximal_trim(&ref));
   }
-
-  ps = ref.avPSNR(&stream);
-  printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\t"
-	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n",
-	 ref.frames.size(),ps.identical, ps.psnr.average(),
-	 ps.psnr.y, ps.psnr.u, ps.psnr.v);
-
-  std::list<yuvframe*>::iterator j = stream.frames.begin();
-  for (std::list<yuvframe*>::iterator i = ref.frames.begin();
-       i != ref.frames.end(); i++)
-  {
-    (*j)->duplicate = (*i)->duplicate;
-    j++;
-  }
-  stream.remove_duplicate();
-  ref.remove_duplicate();
-
+  
   ps = stream.avPSNR(&ref);
   printf("Initial\n\tSize : %d\n\tIdentical Frames : %d\n\t"
 	 "Average PSNR : %2.2f (%2.2f,%2.2f,%2.2f)\n",
