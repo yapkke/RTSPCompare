@@ -140,6 +140,8 @@ std::list<yuvpsnr> yuvstream::psnr(yuvstream* reference, int offset)
   {
     psnrlist.push_back((*i)->psnr(*r));
     r++;
+    if (r == reference->frames.end())
+      break;
   }
 
   return psnrlist;
