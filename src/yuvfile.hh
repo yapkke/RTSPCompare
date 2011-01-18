@@ -74,6 +74,9 @@ bool operator> (streampsnr &s1, streampsnr &s2);
 class yuvframe
 {
 public:
+  /** \brief Duplicate
+   */
+  bool duplicate;
   /** \brief Width of frame
    */
   int width;
@@ -94,9 +97,24 @@ public:
    * @param width width of frame
    * @param height height of frame
    * @param buffer buffer containing frame
+   * @param duplicate indicate if duplicate
    */
   yuvframe(int width, int height, 
-	   unsigned char* buffer);
+	   unsigned char* buffer, 
+	   bool duplicate=false);
+
+  /** \brief Constructor
+   * @param width_ width of frame
+   * @param height_ height of frame
+   */
+  yuvframe(int width_, int height_):
+    width(width_), height(height_)
+  {}
+
+  /** \brief Duplicate/Clone frame
+   * @return a cloned version of the frame
+   */
+  yuvframe* clone();
 
   /** \brief Destructor
    */
@@ -148,6 +166,10 @@ public:
    * @param filename filename to write to
    */
   void write_to_file(char* filename);
+
+  /** \brief Remove duplicate frames
+   */
+  void remove_duplicate();
 
   /** \brief PSNR of stream with reference
    * @param reference reference stream

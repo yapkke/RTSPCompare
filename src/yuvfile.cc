@@ -22,8 +22,9 @@ void yuvpsnr::add(yuvpsnr* add)
 }
 
 yuvframe::yuvframe(int width_, int height_, 
-		   unsigned char* buffer)
+		   unsigned char* buffer, bool duplicate_)
 {
+  duplicate = duplicate_;
   width = width_;
   height = height_;
   int pixel = width_*height_;
@@ -48,6 +49,24 @@ yuvframe::~yuvframe()
     delete u;
   if (v != NULL)
     delete v;
+}
+
+yuvframe* yuvframe::clone()
+{
+  int pixel = width*height;
+  yuvframe* clone = new yuvframe(width, height);
+  clone->duplicate = true;
+
+  clone->y = new unsigned char[pixel];
+  memcpy(clone->y, y, pixel);
+  
+  clone->u = new unsigned char[(int) pixel/4];
+  memcpy(clone->u, u, (int) pixel/4);
+  
+  clone->v = new unsigned char[(int) pixel/4];
+  memcpy(clone->v, v, (int) pixel/4);
+
+  return clone;
 }
 
 yuvpsnr yuvframe::psnr(yuvframe* reference)
@@ -96,6 +115,18 @@ void yuvstream::write_to_file(char* filename)
   }
 
   fclose(f);
+}
+
+void yuvstream::remove_duplicate()
+{
+  std::list<yuvframe*>::iterator i = frames.begin();
+  while (i != frames.end())
+  {
+    if ((*i)->duplicate)
+      i = frames.erase(i);
+    else
+      i++;
+  }
 }
 
 std::list<yuvpsnr> yuvstream::psnr(yuvstream* reference, int offset)
@@ -164,9 +195,9 @@ void yuvstream::dup_frame(int index)
   {
     i++;
     j++;
-  } 
+  }
 
-  frames.insert(j, *j);
+  frames.insert(j, (*j)->clone());
 }
 
 streampsnr yuvstream::avpsnr_dup_k(std::list<yuvpsnr> offset0,
