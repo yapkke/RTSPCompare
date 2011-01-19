@@ -1,5 +1,8 @@
 import numpy
 
+def yuv_fn(y,u,v):
+    return (4*y+u+v)/6
+
 def get_file_av(prefix, function):
     trun = 10
     sumy = 0.0

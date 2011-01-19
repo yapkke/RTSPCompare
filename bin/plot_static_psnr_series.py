@@ -30,30 +30,34 @@ def get_poss_pos():
 yvalues = []
 xvalues = []
 markvalues = []
+labels  = []
 
 video = sys.argv[1]
+pos = int(sys.argv[2])
+run = int(sys.argv[3])
+
 combin = get_ap_combin()
 poscombin = get_poss_pos()
+
 for tx in ["unicast", "bicast"]:
     for apcombin in combin[tx]:
-        xv = []
-        yv = []
-        for pos in poscombin[tx][apcombin]:
-            name = video+"_recv_"+tx+"_"+apcombin+"_"+str(pos).strip()
-            (y, u, v) = get_file_av(name, get_psnr_av)
-            xv.append(pos)
-            yv.append(yuv_fn(y,u,v))
-        yvalues.append(yv)
-        xvalues.append(xv)
-        if (tx == "unicast"):
-            markvalues.append("x--")
-        else:
-            markvalues.append("o-")
+        if (pos in poscombin[tx][apcombin]):
+            name = video+"_recv_"+tx+"_"+apcombin+"_"+str(pos).strip()+"-run"+str(run).strip()
+            print name
+            (y, u, v) = get_psnr_list("psnr_report/"+name)
+            yvalues.append(y)
+            xvalues.append(range(0,300))
+            labels.append(tx+" ("+update_ap_label(apcombin)+")")
+            if (tx == "unicast"):
+                markvalues.append("x--")
+            else:
+                markvalues.append("o-")
             
 for i in range(0, len(yvalues)):
-    print str((xvalues[i],yvalues[i]))
+    #print str((xvalues[i],yvalues[i]))
     plt.plot(xvalues[i],yvalues[i], markvalues[i])
-finalize_plot(plt)
+plt.legend(labels)
+#finalize_plot(plt)
 plt.show()
 
 
