@@ -40,7 +40,7 @@ for tx in ["unicast", "bicast"]:
         yv = []
         for pos in poscombin[tx][apcombin]:
             name = video+"_recv_"+tx+"_"+apcombin+"_"+str(pos).strip()
-            (y, u, v) = get_file_av(name, get_psnr_q1)
+            (y, u, v) = get_file_av(name, get_psnr_min)
             xv.append(pos)
             yv.append(y)
         yvalues.append(yv)
