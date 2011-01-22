@@ -9,7 +9,7 @@ def get_file_av(prefix, function):
     sumu = 0.0
     sumv = 0.0
     for i in range(1, trun+1):
-        (y,u,v) = function("psnr_report/"+prefix+"-run"+str(i).strip())
+        (y,u,v) = function(prefix+"-run"+str(i).strip())
         sumy = sumy + y
         sumu = sumu + u
         sumv = sumv + v
