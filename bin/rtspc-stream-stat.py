@@ -5,6 +5,13 @@ import getopt
 import numpy
 import rtspcompare.rtsp as rtsp
 
+def pktloss(seql):
+    startno = min(seql[:100])
+    endno = max(seql[-100:])
+    if (startno > endno):
+        endno = endno + 65536
+    return (endno-startno+1)-len(seql)
+
 def usage():
     """Display usage
     """
@@ -58,8 +65,8 @@ print "Sequence numbers:\t\t"+str(min(seql))+" -- "+str(max(seql))
 psl = rs.pkt_size_list()
 print "Packet size:\t\t\t"+str(numpy.mean(psl))+"\t"\
       "("+str(min(psl))+" -- "+str(max(psl))+")"
-print "Number Loss:\t\t\t"+str((max(seql)-min(seql)+1)-len(rs))+\
-      " ("+str(float((max(seql)-min(seql)+1)-len(rs))/len(rs))+")"
+print "Number Loss:\t\t\t"+str(pktloss(seql))+\
+      " ("+str(float(pktloss(seql))/len(seql))+")"
 itsl = rs.interarrival_ts_list()
 print "Interarrival time:\t\t"+str(numpy.mean(itsl))+"\t"+\
       "("+str(min(itsl))+" -- "+str(max(itsl))+")"
